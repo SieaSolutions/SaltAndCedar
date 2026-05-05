@@ -1,0 +1,6 @@
+{
+  "crons": [
+    { "path": "/api/cron/leadgen", "schedule": "*/5 12-13 * * *" },
+    { "path": "/api/cron/ghl", "schedule": "0 15,16,17,18 * * *" }
+  ]
+}
