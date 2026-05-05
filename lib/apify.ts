@@ -115,11 +115,12 @@ export async function runZillowScraper(
     `?token=${encodeURIComponent(token)}`;
 
   const body = {
-    furnished: [settings.is_furnished],
+    furnished: Boolean(settings.is_furnished),
     homeTypes: ["houses", "townhomes"],
     location: city,
-    minBeds: [settings.min_beds],
-    minPrice: [Number(settings.min_rent)],
+    // Actor expects scalar numeric filters (not arrays).
+    minBeds: Number(settings.min_beds),
+    minPrice: Math.floor(Number(settings.min_rent)),
     operation: "rent",
     ownerPosted: true,
     space: "entirePlace",
