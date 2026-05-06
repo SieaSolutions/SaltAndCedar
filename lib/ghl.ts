@@ -40,6 +40,12 @@ function pushField(
   out.push({ id, value });
 }
 
+function cleanString(v: string | null | undefined): string | undefined {
+  if (typeof v !== "string") return undefined;
+  const t = v.trim();
+  return t.length ? t : undefined;
+}
+
 export function buildGhlPayload(lead: LeadForGhl, opts?: { listName?: string }) {
   const customFields: GhlCustomField[] = [];
 
@@ -75,19 +81,27 @@ export function buildGhlPayload(lead: LeadForGhl, opts?: { listName?: string }) 
     lead.zid ?? null,
   );
 
-  return {
+  const payload: Record<string, unknown> = {
     locationId: process.env.GHL_LOCATION_ID,
-    firstName: lead.first_name ?? "",
-    lastName: lead.last_name ?? "",
-    phone: lead.owner_number ?? "",
-    email: lead.owner_email ?? "",
-    address1: lead.address ?? "",
-    city: lead.city ?? "",
-    state: lead.state ?? "",
-    postalCode: lead.zipcode ?? "",
+    firstName: cleanString(lead.first_name) ?? "",
+    lastName: cleanString(lead.last_name) ?? "",
+    phone: cleanString(lead.owner_number) ?? "",
     source: "Zillow ForRent",
     customFields,
   };
+
+  const email = cleanString(lead.owner_email);
+  if (email) payload.email = email;
+  const address1 = cleanString(lead.address);
+  if (address1) payload.address1 = address1;
+  const city = cleanString(lead.city);
+  if (city) payload.city = city;
+  const state = cleanString(lead.state);
+  if (state) payload.state = state;
+  const postalCode = cleanString(lead.zipcode);
+  if (postalCode) payload.postalCode = postalCode;
+
+  return payload;
 }
 
 export async function sendLeadToGhl(
