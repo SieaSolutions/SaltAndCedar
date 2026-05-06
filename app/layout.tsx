@@ -28,9 +28,6 @@ export default function RootLayout({
               <Link href="/" className="text-lg font-semibold tracking-tight text-stone-900">
                 Salt & Cedar Leads
               </Link>
-              <p className="text-xs text-stone-500">
-                ForRent pipeline · Neon · GoHighLevel
-              </p>
             </div>
             <nav className="flex flex-wrap gap-2">
               {nav.map((item) => (

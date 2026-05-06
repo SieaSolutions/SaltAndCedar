@@ -81,7 +81,7 @@ export default async function DashboardPage() {
 
   const progressHint = todayLeadgen
     ? `${processedCount} of ${cityTotal} cities touched · ${lf} of ${tgt} leads toward daily target · run ${todayLeadgen.status}`
-    : "No leadgen run row for today yet (first cron tick will create it).";
+    : "";
 
   const leadgenHint = todayLeadgen
     ? `Started ${todayLeadgen.started_at}${todayLeadgen.completed_at ? ` · Completed ${todayLeadgen.completed_at}` : ""}`
@@ -104,9 +104,6 @@ export default async function DashboardPage() {
       ) : null}
       <div>
         <h1 className="text-2xl font-semibold text-stone-900">Dashboard</h1>
-        <p className="mt-1 text-sm text-stone-600">
-          Progress uses America/New_York calendar date for “today”.
-        </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

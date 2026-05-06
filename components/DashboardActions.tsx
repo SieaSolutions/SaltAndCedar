@@ -28,9 +28,6 @@ export function DashboardActions() {
   return (
     <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
       <p className="text-sm font-medium text-stone-800">Manual runs</p>
-      <p className="mt-1 text-xs text-stone-500">
-        Uses server actions (same logic as cron). Ensure env vars are set locally.
-      </p>
       <div className="mt-4 flex flex-wrap gap-2">
         <Button
           variant="secondary"
