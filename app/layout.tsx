@@ -11,6 +11,7 @@ const nav = [
   { href: "/", label: "Dashboard" },
   { href: "/leads", label: "Leads" },
   { href: "/runs", label: "Run History" },
+  { href: "/upload", label: "Bulk Upload" },
   { href: "/settings", label: "Settings" },
 ];
 
