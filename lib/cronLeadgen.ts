@@ -99,20 +99,42 @@ export async function runLeadgenTick(): Promise<LeadgenTickOutcome> {
     const run = await findOrCreateLeadgenRun(target);
     log.info("runs.found", { tick_id, run_id: run.id, status: run.status });
 
-    if (run.status === "completed") {
-      log.info("tick.skipped", { tick_id, run_id: run.id, reason: "already_completed" });
-      return {
-        ok: true,
-        tick_id,
-        skipped: "already_completed",
-        run_id: run.id,
-      };
-    }
-
     const processed = new Set(run.cities_processed ?? []);
     const remaining = cities.filter((c) => !processed.has(c));
-
     const leads_found = Number(run.leads_found ?? 0);
+
+    // If settings changed midday (e.g. cities added) and today's run was marked
+    // completed earlier, reopen it when there's still work and target not met.
+    if (run.status === "completed") {
+      if (leads_found >= target || remaining.length === 0) {
+        log.info("tick.skipped", {
+          tick_id,
+          run_id: run.id,
+          reason: "already_completed",
+          leads_found,
+          remaining_count: remaining.length,
+        });
+        return {
+          ok: true,
+          tick_id,
+          skipped: "already_completed",
+          run_id: run.id,
+        };
+      }
+
+      await sql`
+        UPDATE runs SET status = 'running', completed_at = NULL
+        WHERE id = ${run.id}
+      `;
+      log.info("runs.reopened", {
+        tick_id,
+        run_id: run.id,
+        reason: "settings_changed_with_remaining_cities",
+        remaining_count: remaining.length,
+        leads_found,
+      });
+    }
+
     if (leads_found >= target || remaining.length === 0) {
       await sql`
         UPDATE runs SET status = 'completed', completed_at = NOW()
