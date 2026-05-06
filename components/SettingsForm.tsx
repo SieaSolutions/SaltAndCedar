@@ -72,7 +72,7 @@ export function SettingsForm({ initial }: { initial: SettingsDTO }) {
           />
         </label>
         <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
-          Min rent
+          Min rent (monthly)
           <input
             type="number"
             className="rounded-lg border border-stone-300 px-3 py-2 text-sm"

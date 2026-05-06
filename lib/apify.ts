@@ -114,13 +114,20 @@ export async function runZillowScraper(
     `https://api.apify.com/v2/acts/7EG6vc4LOoouPfk3t/run-sync-get-dataset-items` +
     `?token=${encodeURIComponent(token)}`;
 
+  // Settings stores rent as a monthly amount, but this Apify actor expects
+  // the weekly number for its price filter.
+  const monthlyRent = Number(settings.min_rent);
+  const weeklyRent = Number.isFinite(monthlyRent)
+    ? Math.max(0, Math.floor(monthlyRent / 4))
+    : 0;
+
   const body = {
     furnished: Boolean(settings.is_furnished),
     homeTypes: ["houses", "townhomes"],
     location: city,
     // Actor expects scalar numeric filters (not arrays).
     minBeds: Number(settings.min_beds),
-    minPrice: Math.floor(Number(settings.min_rent)),
+    minPrice: weeklyRent,
     operation: "rent",
     ownerPosted: true,
     space: "entirePlace",
