@@ -43,8 +43,7 @@ export async function PUT(req: Request) {
     daily_target === undefined ||
     min_rent === undefined ||
     min_beds === undefined ||
-    days_back === undefined ||
-    max_results_per_city === undefined
+    days_back === undefined
   ) {
     return NextResponse.json({ error: "Missing numeric fields" }, { status: 400 });
   }
@@ -60,6 +59,13 @@ export async function PUT(req: Request) {
   const is_furnished =
     typeof b.is_furnished === "boolean" ? b.is_furnished : Boolean(b.is_furnished);
 
+  // max_results_per_city is no longer surfaced in the UI but the column is
+  // still present; preserve the existing value when the client doesn't send it.
+  const maxResultsParam =
+    max_results_per_city === undefined
+      ? null
+      : Math.max(1, Math.floor(max_results_per_city));
+
   await sql`
     UPDATE settings SET
       daily_target = ${Math.max(1, Math.floor(daily_target))},
@@ -68,7 +74,7 @@ export async function PUT(req: Request) {
       min_beds = ${Math.max(0, Math.floor(min_beds))},
       is_furnished = ${is_furnished},
       days_back = ${Math.max(1, Math.floor(days_back))},
-      max_results_per_city = ${Math.max(1, Math.floor(max_results_per_city))}
+      max_results_per_city = COALESCE(${maxResultsParam}, max_results_per_city)
     WHERE id = 1
   `;
 

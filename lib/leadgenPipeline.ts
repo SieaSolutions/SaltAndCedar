@@ -34,9 +34,6 @@ export async function runOneCity(
     throw new ApifyError(String(e), "actor1");
   }
 
-  const max = Number(settings.max_results_per_city ?? 25);
-  listings = listings.slice(0, max);
-
   if (!listings.length) {
     log.info("pipeline.city.empty", { city, run_id, tick_id });
     endTimer();

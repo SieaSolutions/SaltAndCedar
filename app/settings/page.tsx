@@ -25,7 +25,6 @@ export default async function SettingsPage() {
     min_beds: Number(r.min_beds ?? 3),
     is_furnished: Boolean(r.is_furnished),
     days_back: Number(r.days_back ?? 1),
-    max_results_per_city: Number(r.max_results_per_city ?? 25),
   };
 
   return (

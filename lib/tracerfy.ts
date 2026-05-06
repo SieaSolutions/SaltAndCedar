@@ -4,7 +4,6 @@ import type { ListingMerged } from "@/lib/types";
 
 const URL = "https://tracerfy.com/v1/api/trace/lookup/";
 
-/** TODO: adjust field extraction after observing real Tracerfy responses */
 export function extractContact(json: unknown): {
   phone: string | null;
   email: string | null;
@@ -12,21 +11,56 @@ export function extractContact(json: unknown): {
   if (!json || typeof json !== "object") return { phone: null, email: null };
   const o = json as Record<string, unknown>;
 
-  let phone: string | null = null;
-  if (typeof o.phone === "string") phone = o.phone;
-  else if (Array.isArray(o.phones) && o.phones.length && typeof o.phones[0] === "string")
-    phone = o.phones[0];
-  else if (
-    Array.isArray(o.phone_numbers) &&
-    o.phone_numbers.length &&
-    typeof o.phone_numbers[0] === "string"
-  )
-    phone = o.phone_numbers[0];
+  function firstString(v: unknown): string | null {
+    return typeof v === "string" && v.trim() ? v.trim() : null;
+  }
 
+  function fromStringArray(v: unknown): string | null {
+    if (!Array.isArray(v) || !v.length) return null;
+    for (const item of v) {
+      const s = firstString(item);
+      if (s) return s;
+    }
+    return null;
+  }
+
+  function fromObjectArray(
+    v: unknown,
+    key: "number" | "email",
+  ): string | null {
+    if (!Array.isArray(v) || !v.length) return null;
+    for (const item of v) {
+      if (!item || typeof item !== "object") continue;
+      const rec = item as Record<string, unknown>;
+      const s = firstString(rec[key]);
+      if (s) return s;
+    }
+    return null;
+  }
+
+  // Tracerfy lookup shape observed:
+  // { hit, persons: [{ phones: [{ number }], emails: [{ email }] }] }
+  let phone: string | null = null;
   let email: string | null = null;
-  if (typeof o.email === "string") email = o.email;
-  else if (Array.isArray(o.emails) && o.emails.length && typeof o.emails[0] === "string")
-    email = o.emails[0];
+  const persons = Array.isArray(o.persons) ? o.persons : [];
+  for (const p of persons) {
+    if (!p || typeof p !== "object") continue;
+    const person = p as Record<string, unknown>;
+    if (!phone) phone = fromObjectArray(person.phones, "number");
+    if (!email) email = fromObjectArray(person.emails, "email");
+    if (phone && email) break;
+  }
+
+  // Backward-compatible fallbacks in case Tracerfy response variants differ.
+  if (!phone) {
+    phone =
+      firstString(o.phone) ??
+      fromStringArray(o.phones) ??
+      fromStringArray(o.phone_numbers);
+  }
+  if (!email) {
+    email = firstString(o.email) ?? fromStringArray(o.emails);
+  }
 
   return { phone, email };
 }

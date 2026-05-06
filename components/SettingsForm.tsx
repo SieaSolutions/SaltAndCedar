@@ -11,7 +11,6 @@ export type SettingsDTO = {
   min_beds: number;
   is_furnished: boolean;
   days_back: number;
-  max_results_per_city: number;
 };
 
 export function SettingsForm({ initial }: { initial: SettingsDTO }) {
@@ -24,9 +23,6 @@ export function SettingsForm({ initial }: { initial: SettingsDTO }) {
   const [min_beds, setMin_beds] = useState(initial.min_beds);
   const [is_furnished, setIs_furnished] = useState(initial.is_furnished);
   const [days_back, setDays_back] = useState(initial.days_back);
-  const [max_results_per_city, setMax_results_per_city] = useState(
-    initial.max_results_per_city,
-  );
 
   const [cities, setCities] = useState<string[]>(initial.cities ?? []);
   const [cityInput, setCityInput] = useState("");
@@ -39,17 +35,8 @@ export function SettingsForm({ initial }: { initial: SettingsDTO }) {
       min_beds,
       is_furnished,
       days_back,
-      max_results_per_city,
     }),
-    [
-      daily_target,
-      cities,
-      min_rent,
-      min_beds,
-      is_furnished,
-      days_back,
-      max_results_per_city,
-    ],
+    [daily_target, cities, min_rent, min_beds, is_furnished, days_back],
   );
 
   function moveCity(idx: number, dir: -1 | 1) {
@@ -112,18 +99,6 @@ export function SettingsForm({ initial }: { initial: SettingsDTO }) {
             value={days_back}
             min={1}
             onChange={(e) => setDays_back(Number(e.target.value))}
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
-          Max results / city (cap after scrape)
-          <input
-            type="number"
-            className="rounded-lg border border-stone-300 px-3 py-2 text-sm"
-            value={max_results_per_city}
-            min={1}
-            onChange={(e) =>
-              setMax_results_per_city(Number(e.target.value))
-            }
           />
         </label>
         <label className="flex items-center gap-2 text-sm font-medium text-stone-700">
