@@ -5,6 +5,13 @@ import { log } from "@/lib/log";
 import type { LeadRow } from "@/lib/types";
 import { sleep } from "@/lib/runtime";
 
+const LIST_ROTATION = [
+  "Cold Outreach List 1",
+  "Cold Outreach List 2",
+  "Cold Outreach List 3",
+  "Cold Outreach List 4",
+] as const;
+
 async function staleSweepGhlSameAsLeadgen(): Promise<number> {
   const swept = await sql`
     UPDATE runs SET status = 'failed', completed_at = COALESCE(completed_at, NOW())
@@ -15,6 +22,18 @@ async function staleSweepGhlSameAsLeadgen(): Promise<number> {
     RETURNING id
   `;
   return swept.length;
+}
+
+async function selectOutboundListName(): Promise<string> {
+  const rows = await sql`
+    SELECT COUNT(*)::int AS n
+    FROM runs
+    WHERE type = 'ghl'
+      AND ((started_at AT TIME ZONE 'America/New_York')::date)
+          = ((NOW() AT TIME ZONE 'America/New_York')::date)
+  `;
+  const n = Number((rows[0] as { n: number }).n ?? 0);
+  return LIST_ROTATION[n % LIST_ROTATION.length];
 }
 
 export type GhlBatchOutcome =
@@ -42,6 +61,7 @@ export async function runGhlBatch(): Promise<GhlBatchOutcome> {
     `;
     const daily_target = Number((srows[0] as { daily_target: number })?.daily_target ?? 200);
     const batch_size = Math.max(1, Math.ceil(daily_target / 4));
+    const list_name = await selectOutboundListName();
 
     const runIns = await sql`
       INSERT INTO runs (type, started_at, completed_at, status, target, leads_found, leads_sent, cities_processed)
@@ -89,7 +109,7 @@ export async function runGhlBatch(): Promise<GhlBatchOutcome> {
     for (const lead of leads) {
       attempts++;
       const started = Date.now();
-      const result = await sendLeadToGhl(lead);
+      const result = await sendLeadToGhl(lead, { listName: list_name });
       const elapsed_ms = Date.now() - started;
 
       if (result.ok) {
@@ -102,6 +122,7 @@ export async function runGhlBatch(): Promise<GhlBatchOutcome> {
           tick_id,
           run_id,
           lead_id: lead.id,
+          list_name,
           elapsed_ms,
           http_status: result.http_status,
         });
@@ -114,6 +135,7 @@ export async function runGhlBatch(): Promise<GhlBatchOutcome> {
           tick_id,
           run_id,
           lead_id: lead.id,
+          list_name,
           elapsed_ms,
           http_status: result.http_status,
           error_message: result.error_message?.slice(0, 300),
@@ -134,6 +156,7 @@ export async function runGhlBatch(): Promise<GhlBatchOutcome> {
     log.info("ghl.batch.completed", {
       tick_id,
       run_id,
+      list_name,
       leads_sent,
       attempts,
       final_status: finalStatus,
