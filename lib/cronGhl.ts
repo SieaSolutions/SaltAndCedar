@@ -104,6 +104,7 @@ export async function runGhlBatch(): Promise<GhlBatchOutcome> {
     }
 
     let leads_sent = 0;
+    let already_in_ghl = 0;
     let attempts = 0;
 
     for (const lead of leads) {
@@ -119,6 +120,20 @@ export async function runGhlBatch(): Promise<GhlBatchOutcome> {
         `;
         leads_sent++;
         log.info("ghl.sent", {
+          tick_id,
+          run_id,
+          lead_id: lead.id,
+          list_name,
+          elapsed_ms,
+          http_status: result.http_status,
+        });
+      } else if (result.duplicate) {
+        await sql`
+          UPDATE leads SET status = 'AlreadyInGHL', ghl_sent_at = NOW()
+          WHERE id = ${lead.id}
+        `;
+        already_in_ghl++;
+        log.info("ghl.duplicate", {
           tick_id,
           run_id,
           lead_id: lead.id,
@@ -146,7 +161,9 @@ export async function runGhlBatch(): Promise<GhlBatchOutcome> {
     }
 
     const finalStatus =
-      leads_sent === 0 && attempts > 0 ? "failed" : "completed";
+      leads_sent === 0 && already_in_ghl === 0 && attempts > 0
+        ? "failed"
+        : "completed";
 
     await sql`
       UPDATE runs SET status = ${finalStatus}, completed_at = NOW(), leads_sent = ${leads_sent}
@@ -158,6 +175,7 @@ export async function runGhlBatch(): Promise<GhlBatchOutcome> {
       run_id,
       list_name,
       leads_sent,
+      already_in_ghl,
       attempts,
       final_status: finalStatus,
     });

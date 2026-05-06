@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-const STATUSES = ["", "New", "GHL", "Failed", "Lost", "Won"];
+const STATUSES = ["", "New", "GHL", "AlreadyInGHL", "Failed", "Lost", "Won"];
 
 export default async function LeadsPage({
   searchParams,

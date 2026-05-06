@@ -1,4 +1,10 @@
-export type LeadStatus = "New" | "GHL" | "Failed" | "Lost" | "Won";
+export type LeadStatus =
+  | "New"
+  | "GHL"
+  | "AlreadyInGHL"
+  | "Failed"
+  | "Lost"
+  | "Won";
 
 export interface SettingsRow {
   id: number;

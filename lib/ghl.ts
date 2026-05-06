@@ -4,6 +4,7 @@ export interface GhlSendResult {
   ok: boolean;
   http_status?: number;
   error_message?: string;
+  duplicate?: boolean;
 }
 
 const GHL_VERSION = "2021-07-28";
@@ -135,10 +136,17 @@ export async function sendLeadToGhl(
     });
     clearTimeout(t);
     const ok = res.ok;
+    const responseText = ok ? undefined : await res.text().catch(() => undefined);
+    const duplicate =
+      !ok &&
+      res.status === 400 &&
+      typeof responseText === "string" &&
+      responseText.toLowerCase().includes("does not allow duplicated contacts");
     return {
       ok,
       http_status: res.status,
-      error_message: ok ? undefined : await res.text().catch(() => undefined),
+      error_message: responseText,
+      duplicate,
     };
   } catch (e) {
     clearTimeout(t);

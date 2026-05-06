@@ -24,7 +24,7 @@ export function parseLeadFilters(sp: URLSearchParams): LeadListFilters {
   return {
     status:
       status &&
-      ["New", "GHL", "Failed", "Lost", "Won"].includes(status)
+      ["New", "GHL", "AlreadyInGHL", "Failed", "Lost", "Won"].includes(status)
         ? status
         : null,
     cityLike: city ? `%${city}%` : null,

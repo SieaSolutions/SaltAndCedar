@@ -48,6 +48,15 @@ export async function POST(
     return NextResponse.json({ ok: true, status: "GHL" });
   }
 
+  if (result.duplicate) {
+    await sql`
+      UPDATE leads SET status = 'AlreadyInGHL', ghl_sent_at = NOW()
+      WHERE id = ${leadId}
+    `;
+    log.info("ghl.duplicate", { lead_id: leadId, elapsed_ms, retry: true });
+    return NextResponse.json({ ok: true, status: "AlreadyInGHL" });
+  }
+
   await sql`
     UPDATE leads SET status = 'Failed'
     WHERE id = ${leadId}

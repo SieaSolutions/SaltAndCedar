@@ -3,6 +3,7 @@ import type { LeadStatus } from "@/lib/types";
 const leadStyles: Record<LeadStatus, string> = {
   New: "bg-stone-100 text-stone-700 ring-stone-200",
   GHL: "bg-sky-100 text-sky-800 ring-sky-200",
+  AlreadyInGHL: "bg-violet-100 text-violet-800 ring-violet-200",
   Failed: "bg-red-100 text-red-800 ring-red-200",
   Lost: "bg-amber-100 text-amber-900 ring-amber-200",
   Won: "bg-emerald-100 text-emerald-900 ring-emerald-200",
