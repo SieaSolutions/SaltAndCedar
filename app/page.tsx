@@ -128,19 +128,6 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
-        <p className="text-sm text-stone-700">
-          Manual run controls are now in{" "}
-          <Link
-            href="/runs"
-            className="font-medium text-[var(--accent)] hover:underline"
-          >
-            Run history
-          </Link>
-          .
-        </p>
-      </div>
-
       <div className="rounded-xl border border-stone-200 bg-white shadow-sm">
         <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
           <h2 className="text-sm font-semibold text-stone-900">
