@@ -1,3 +1,4 @@
+import { DashboardActions } from "@/components/DashboardActions";
 import { StatusBadge } from "@/components/StatusBadge";
 import { sql } from "@/lib/db";
 import Link from "next/link";
@@ -58,6 +59,8 @@ export default async function RunsPage({
           active={type === "ghl"}
         />
       </div>
+
+      <DashboardActions />
 
       <div className="overflow-x-auto rounded-xl border border-stone-200 bg-white shadow-sm">
         <table className="min-w-full text-left text-sm">

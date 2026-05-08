@@ -1,4 +1,3 @@
-import { DashboardActions } from "@/components/DashboardActions";
 import { StatCard } from "@/components/StatCard";
 import { StatusBadge } from "@/components/StatusBadge";
 import { sql } from "@/lib/db";
@@ -83,10 +82,6 @@ export default async function DashboardPage() {
     ? `${processedCount} of ${cityTotal} cities touched · ${lf} of ${tgt} leads toward daily target · run ${todayLeadgen.status}`
     : "";
 
-  const leadgenHint = todayLeadgen
-    ? `Started ${todayLeadgen.started_at}${todayLeadgen.completed_at ? ` · Completed ${todayLeadgen.completed_at}` : ""}`
-    : "—";
-
   const ghlHint = lastGhl
     ? `${lastGhl.started_at} · sent ${lastGhl.leads_sent ?? 0} · ${lastGhl.status}`
     : "—";
@@ -133,27 +128,17 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <DashboardActions />
-        <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-stone-800">Run snapshots</p>
-          <dl className="mt-4 space-y-3 text-sm">
-            <div>
-              <dt className="text-stone-500">Leadgen (today)</dt>
-              <dd className="font-medium text-stone-900">{leadgenHint}</dd>
-            </div>
-            <div>
-              <dt className="text-stone-500">GHL (latest)</dt>
-              <dd className="font-medium text-stone-900">{ghlHint}</dd>
-            </div>
-          </dl>
+      <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
+        <p className="text-sm text-stone-700">
+          Manual run controls are now in{" "}
           <Link
             href="/runs"
-            className="mt-4 inline-block text-sm font-medium text-[var(--accent)] hover:underline"
+            className="font-medium text-[var(--accent)] hover:underline"
           >
-            View full history →
+            Run history
           </Link>
-        </div>
+          .
+        </p>
       </div>
 
       <div className="rounded-xl border border-stone-200 bg-white shadow-sm">
