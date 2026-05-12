@@ -1,5 +1,5 @@
+import { LeadStatusSelect } from "@/components/LeadStatusSelect";
 import { RetryLeadButton } from "@/components/RetryLeadButton";
-import { StatusBadge } from "@/components/StatusBadge";
 import { parseLeadFilters } from "@/lib/leadFilters";
 import { countLeads, listLeads } from "@/lib/leadQueries";
 import Link from "next/link";
@@ -149,7 +149,6 @@ export default async function LeadsPage({
               <th className="px-4 py-3 font-medium">Baths</th>
               <th className="px-4 py-3 font-medium">Rent</th>
               <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3 font-medium">Scraped</th>
               <th className="px-4 py-3 font-medium">Actions</th>
             </tr>
           </thead>
@@ -184,10 +183,10 @@ export default async function LeadsPage({
                   {r.rent_price != null ? String(r.rent_price) : "—"}
                 </td>
                 <td className="px-4 py-3">
-                  <StatusBadge status={String(r.status)} />
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 text-xs text-stone-500">
-                  {(r.date_scraped as string) ?? "—"}
+                  <LeadStatusSelect
+                    leadId={Number(r.id)}
+                    status={String(r.status)}
+                  />
                 </td>
                 <td className="px-4 py-3">
                   {String(r.status) === "Failed" ? (
