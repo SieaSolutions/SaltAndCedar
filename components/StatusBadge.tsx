@@ -7,6 +7,7 @@ const leadStyles: Record<LeadStatus, string> = {
   Failed: "bg-red-100 text-red-800 ring-red-200",
   Lost: "bg-amber-100 text-amber-900 ring-amber-200",
   Won: "bg-emerald-100 text-emerald-900 ring-emerald-200",
+  manuallyContacted: "bg-teal-100 text-teal-800 ring-teal-200",
 };
 
 const runStyles: Record<string, string> = {

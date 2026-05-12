@@ -1,17 +1,8 @@
 import { sql } from "@/lib/db";
-import type { LeadStatus } from "@/lib/types";
+import { LEAD_STATUSES, type LeadStatus } from "@/lib/types";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
-
-const VALID_STATUSES: LeadStatus[] = [
-  "New",
-  "GHL",
-  "AlreadyInGHL",
-  "Failed",
-  "Lost",
-  "Won",
-];
 
 export async function PATCH(
   req: Request,
@@ -38,7 +29,7 @@ export async function PATCH(
       ? (body as { status: string }).status.trim()
       : "";
 
-  if (!VALID_STATUSES.includes(status as LeadStatus)) {
+  if (!LEAD_STATUSES.includes(status as LeadStatus)) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 

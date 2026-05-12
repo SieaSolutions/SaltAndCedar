@@ -1,12 +1,13 @@
 import { LeadStatusSelect } from "@/components/LeadStatusSelect";
 import { RetryLeadButton } from "@/components/RetryLeadButton";
+import { LEAD_STATUSES } from "@/lib/types";
 import { parseLeadFilters } from "@/lib/leadFilters";
 import { countLeads, listLeads } from "@/lib/leadQueries";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-const STATUSES = ["", "New", "GHL", "AlreadyInGHL", "Failed", "Lost", "Won"];
+const STATUSES = ["", ...LEAD_STATUSES];
 
 export default async function LeadsPage({
   searchParams,

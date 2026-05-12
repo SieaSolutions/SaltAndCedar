@@ -38,7 +38,17 @@ CREATE TABLE IF NOT EXISTS leads (
   date_scraped TIMESTAMPTZ DEFAULT NOW(),
   ghl_sent_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  CONSTRAINT leads_status_chk CHECK (status IN ('New', 'GHL', 'Failed', 'Lost', 'Won'))
+  CONSTRAINT leads_status_chk CHECK (
+    status IN (
+      'New',
+      'GHL',
+      'AlreadyInGHL',
+      'Failed',
+      'Lost',
+      'Won',
+      'manuallyContacted'
+    )
+  )
 );
 
 CREATE INDEX IF NOT EXISTS idx_leads_owner_number ON leads (owner_number);

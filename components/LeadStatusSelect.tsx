@@ -1,17 +1,8 @@
 "use client";
 
-import type { LeadStatus } from "@/lib/types";
+import { LEAD_STATUSES, type LeadStatus } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-
-const STATUSES: LeadStatus[] = [
-  "New",
-  "GHL",
-  "AlreadyInGHL",
-  "Failed",
-  "Lost",
-  "Won",
-];
 
 const selectStyles: Record<LeadStatus, string> = {
   New: "border-stone-200 bg-stone-50 text-stone-700",
@@ -20,6 +11,7 @@ const selectStyles: Record<LeadStatus, string> = {
   Failed: "border-red-200 bg-red-50 text-red-800",
   Lost: "border-amber-200 bg-amber-50 text-amber-900",
   Won: "border-emerald-200 bg-emerald-50 text-emerald-900",
+  manuallyContacted: "border-teal-200 bg-teal-50 text-teal-800",
 };
 
 export function LeadStatusSelect({
@@ -69,7 +61,7 @@ export function LeadStatusSelect({
         className={`min-w-[8.5rem] rounded-lg border px-2 py-1 text-xs font-medium disabled:opacity-60 ${style}`}
         aria-label="Lead status"
       >
-        {STATUSES.map((s) => (
+        {LEAD_STATUSES.map((s) => (
           <option key={s} value={s}>
             {s}
           </option>

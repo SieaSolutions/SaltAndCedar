@@ -1,10 +1,14 @@
-export type LeadStatus =
-  | "New"
-  | "GHL"
-  | "AlreadyInGHL"
-  | "Failed"
-  | "Lost"
-  | "Won";
+export const LEAD_STATUSES = [
+  "New",
+  "GHL",
+  "AlreadyInGHL",
+  "Failed",
+  "Lost",
+  "Won",
+  "manuallyContacted",
+] as const;
+
+export type LeadStatus = (typeof LEAD_STATUSES)[number];
 
 export interface SettingsRow {
   id: number;

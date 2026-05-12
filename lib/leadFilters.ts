@@ -1,3 +1,5 @@
+import { LEAD_STATUSES } from "@/lib/types";
+
 export type LeadListFilters = {
   status: string | null;
   cityLike: string | null;
@@ -23,8 +25,7 @@ export function parseLeadFilters(sp: URLSearchParams): LeadListFilters {
 
   return {
     status:
-      status &&
-      ["New", "GHL", "AlreadyInGHL", "Failed", "Lost", "Won"].includes(status)
+      status && LEAD_STATUSES.includes(status as (typeof LEAD_STATUSES)[number])
         ? status
         : null,
     cityLike: city ? `%${city}%` : null,
