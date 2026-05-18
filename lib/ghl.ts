@@ -1,3 +1,4 @@
+import { formatPhoneE164 } from "@/lib/phone";
 import type { LeadRow } from "@/lib/types";
 
 export interface GhlSendResult {
@@ -86,7 +87,7 @@ export function buildGhlPayload(lead: LeadForGhl, opts?: { listName?: string }) 
     locationId: process.env.GHL_LOCATION_ID,
     firstName: cleanString(lead.first_name) ?? "",
     lastName: cleanString(lead.last_name) ?? "",
-    phone: cleanString(lead.owner_number) ?? "",
+    phone: formatPhoneE164(lead.owner_number) || cleanString(lead.owner_number) || "",
     source: "Zillow ForRent",
     customFields,
   };

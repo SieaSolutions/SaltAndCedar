@@ -136,6 +136,16 @@ export function BulkUploadForm() {
         if (cell.length === 0) continue;
         out[target] = out[target] ? `${out[target]} | ${cell}` : cell;
       }
+      if (!out.owner_number) {
+        for (const header of parsed.headers) {
+          if (suggestField(header) !== "owner_number") continue;
+          const cell = (row[header] ?? "").toString().trim();
+          if (cell.length > 0) {
+            out.owner_number = cell;
+            break;
+          }
+        }
+      }
       return out;
     });
   }, [parsed, mapping]);
@@ -143,7 +153,14 @@ export function BulkUploadForm() {
   const previewColumns = useMemo(() => {
     const cols = new Set<string>();
     for (const r of previewRows) for (const k of Object.keys(r)) cols.add(k);
-    return MAPPABLE_FIELDS.filter((f) => cols.has(f));
+    const ordered = MAPPABLE_FIELDS.filter((f) => cols.has(f));
+    if (ordered.includes("owner_number")) {
+      return [
+        "owner_number",
+        ...ordered.filter((f) => f !== "owner_number"),
+      ] as typeof ordered;
+    }
+    return ordered;
   }, [previewRows]);
 
   async function submit() {

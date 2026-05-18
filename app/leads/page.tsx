@@ -1,4 +1,5 @@
 import { LeadStatusSelect } from "@/components/LeadStatusSelect";
+import { PhoneCell } from "@/components/PhoneCell";
 import { RetryLeadButton } from "@/components/RetryLeadButton";
 import { LEAD_STATUSES } from "@/lib/types";
 import { parseLeadFilters } from "@/lib/leadFilters";
@@ -159,8 +160,8 @@ export default async function LeadsPage({
                 <td className="px-4 py-3 font-medium text-stone-900">
                   {(r.owner_name as string) ?? "—"}
                 </td>
-                <td className="px-4 py-3 tabular-nums text-stone-700">
-                  {(r.owner_number as string) ?? "—"}
+                <td className="whitespace-nowrap px-4 py-3">
+                  <PhoneCell value={r.owner_number as string | null} />
                 </td>
                 <td className="px-4 py-3 text-stone-600">
                   {(r.owner_email as string) ?? "—"}
