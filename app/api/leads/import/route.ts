@@ -52,6 +52,7 @@ export async function POST(req: Request) {
 
   const rows: ImportRow[] = [];
   let hasAnyPhone = false;
+  let hasAnyPhoneType = false;
 
   for (let i = 0; i < raw.length; i++) {
     const r = raw[i];
@@ -79,6 +80,9 @@ export async function POST(req: Request) {
     if (typeof safe.owner_number === "string" && safe.owner_number.trim()) {
       hasAnyPhone = true;
     }
+    if (typeof safe.phone_type === "string" && safe.phone_type.trim()) {
+      hasAnyPhoneType = true;
+    }
     rows.push(safe);
   }
 
@@ -87,6 +91,16 @@ export async function POST(req: Request) {
       {
         error:
           "No rows have a value for owner_number. Map a phone column and try again.",
+      },
+      { status: 400 },
+    );
+  }
+
+  if (!hasAnyPhoneType) {
+    return NextResponse.json(
+      {
+        error:
+          "No rows have a value for phone_type. Map a phone type column (e.g. Mobile, Landline) and try again.",
       },
       { status: 400 },
     );

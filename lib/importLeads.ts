@@ -83,6 +83,7 @@ export async function importLeads(
       displayName: owner_name,
       businessName: null,
       phoneRaw: trimOrNull(r.owner_number),
+      phoneTypeRaw: trimOrNull(r.phone_type),
       tracerfy_email: null,
       owner_name,
       owner_email: trimOrNull(r.owner_email),
@@ -123,7 +124,11 @@ export async function importLeads(
   })[] = [];
 
   for (const c of candidates) {
-    const ev = evaluateCandidate(c, { dbPhones, runPhones });
+    const ev = evaluateCandidate(c, {
+      dbPhones,
+      runPhones,
+      requireMobile: true,
+    });
     if (!ev.keep) {
       const r = ev.reason ?? "unknown";
       reasonCounts.set(r, (reasonCounts.get(r) ?? 0) + 1);

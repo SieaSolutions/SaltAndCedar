@@ -9,6 +9,7 @@ export const MAPPABLE_FIELDS = [
   "first_name",
   "last_name",
   "owner_number",
+  "phone_type",
   "owner_email",
   "address",
   "city",
@@ -29,6 +30,7 @@ export const FIELD_LABELS: Record<MappableField, string> = {
   first_name: "First name",
   last_name: "Last name",
   owner_number: "Phone (owner_number)",
+  phone_type: "Phone type (mobile only)",
   owner_email: "Email",
   address: "Address",
   city: "City",
@@ -49,11 +51,23 @@ export const HEADER_SYNONYMS: Record<string, MappableField> = {
   // owner_number
   phone: "owner_number",
   phonenumber: "owner_number",
-  mobile: "owner_number",
-  cell: "owner_number",
+  mobilenumber: "owner_number",
+  mobilephone: "owner_number",
+  cellphone: "owner_number",
+  cellnumber: "owner_number",
   contactnumber: "owner_number",
   ownerphone: "owner_number",
   ownernumber: "owner_number",
+
+  // phone_type
+  phonetype: "phone_type",
+  phonelinetype: "phone_type",
+  linetype: "phone_type",
+  linetye: "phone_type",
+  numbertype: "phone_type",
+  phonecategory: "phone_type",
+  linetypename: "phone_type",
+  contactphonetype: "phone_type",
 
   // owner_email
   email: "owner_email",

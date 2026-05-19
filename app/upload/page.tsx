@@ -11,7 +11,9 @@ export default function UploadPage() {
           Upload a CSV, map its columns to lead fields, and import. Rows go in
           as <code className="rounded bg-stone-100 px-1 py-0.5 text-xs">status=&apos;New&apos;</code>{" "}
           with <code className="rounded bg-stone-100 px-1 py-0.5 text-xs">source=&apos;CSV Import&apos;</code>.
-          The same filters and dedupe used by the leadgen pipeline apply.
+          The same filters and dedupe used by the leadgen pipeline apply. Map
+          phone type and only <strong>mobile</strong> / <strong>cell</strong>{" "}
+          numbers are imported (landlines are skipped).
         </p>
       </div>
 

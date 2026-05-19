@@ -30,6 +30,7 @@ interface ImportResponse {
 const PREVIEW_ROWS = 5;
 const REASON_LABELS: Record<string, string> = {
   no_phone: "No phone number",
+  not_mobile: "Not mobile (landline / other)",
   bad_owner_name: "Bad owner name",
   keyword_blocklist: "Keyword blocklisted",
   duplicate_phone: "Duplicate phone",
@@ -108,6 +109,13 @@ export function BulkUploadForm() {
     [mapping],
   );
 
+  const phoneTypeMapped = useMemo(
+    () => Object.values(mapping).some((m) => m === "phone_type"),
+    [mapping],
+  );
+
+  const canImport = phoneMapped && phoneTypeMapped;
+
   const fieldUseCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const v of Object.values(mapping)) {
@@ -146,6 +154,16 @@ export function BulkUploadForm() {
           }
         }
       }
+      if (!out.phone_type) {
+        for (const header of parsed.headers) {
+          if (suggestField(header) !== "phone_type") continue;
+          const cell = (row[header] ?? "").toString().trim();
+          if (cell.length > 0) {
+            out.phone_type = cell;
+            break;
+          }
+        }
+      }
       return out;
     });
   }, [parsed, mapping]);
@@ -154,10 +172,13 @@ export function BulkUploadForm() {
     const cols = new Set<string>();
     for (const r of previewRows) for (const k of Object.keys(r)) cols.add(k);
     const ordered = MAPPABLE_FIELDS.filter((f) => cols.has(f));
-    if (ordered.includes("owner_number")) {
+    const pinned: typeof ordered = [];
+    if (ordered.includes("owner_number")) pinned.push("owner_number");
+    if (ordered.includes("phone_type")) pinned.push("phone_type");
+    if (pinned.length) {
       return [
-        "owner_number",
-        ...ordered.filter((f) => f !== "owner_number"),
+        ...pinned,
+        ...ordered.filter((f) => !pinned.includes(f)),
       ] as typeof ordered;
     }
     return ordered;
@@ -165,7 +186,7 @@ export function BulkUploadForm() {
 
   async function submit() {
     if (!parsed) return;
-    if (!phoneMapped) return;
+    if (!canImport) return;
     setSubmitError("");
     setStep("submitting");
 
@@ -241,16 +262,20 @@ export function BulkUploadForm() {
           <div className="flex flex-wrap items-center gap-3">
             <Button
               variant="primary"
-              disabled={!phoneMapped || step === "submitting"}
+              disabled={!canImport || step === "submitting"}
               onClick={submit}
             >
               {step === "submitting"
                 ? "Importing…"
                 : `Import ${parsed.rows.length.toLocaleString()} row${parsed.rows.length === 1 ? "" : "s"}`}
             </Button>
-            {!phoneMapped ? (
+            {!canImport ? (
               <p className="text-sm text-amber-700">
-                Map a column to <strong>{FIELD_LABELS.owner_number}</strong> to enable import.
+                Map columns to{" "}
+                <strong>{FIELD_LABELS.owner_number}</strong> and{" "}
+                <strong>{FIELD_LABELS.phone_type}</strong> to enable import.
+                Only <strong>mobile</strong> / <strong>cell</strong> rows are
+                uploaded; landlines and other types are skipped.
               </p>
             ) : null}
             {duplicateFields.length ? (
@@ -374,7 +399,8 @@ function Step2Mapping({
       <h2 className="text-base font-semibold text-stone-900">2. Map columns</h2>
       <p className="mt-1 text-sm text-stone-600">
         Choose the lead field each CSV column should fill, or leave it as
-        Ignore. Phone (owner_number) is required.
+        Ignore. Phone and phone type are required — only mobile/cell rows are
+        imported.
       </p>
 
       <div className="mt-4 overflow-x-auto">

@@ -1,5 +1,6 @@
 import type { ListingMerged } from "@/lib/types";
 import { normalizePhone } from "@/lib/phone";
+import { isMobilePhoneType } from "@/lib/phoneType";
 
 const BLOCKLIST = [
   "Properties",
@@ -30,15 +31,26 @@ function containsKeyword(text: string): boolean {
 export interface Candidate extends ListingMerged {
   owner_name: string | null;
   owner_email: string | null;
+  /** Set on CSV import when a phone-type column is mapped. */
+  phoneTypeRaw?: string | null;
 }
 
 export function evaluateCandidate(
   c: Candidate,
-  opts: { dbPhones: Set<string>; runPhones: Set<string> },
+  opts: {
+    dbPhones: Set<string>;
+    runPhones: Set<string>;
+    /** CSV import: only keep rows whose phone type is mobile/cell. */
+    requireMobile?: boolean;
+  },
 ): { keep: boolean; reason?: string } {
   const phone = normalizePhone(c.phoneRaw);
   if (!phone || phone.length < 10) {
     return { keep: false, reason: "no_phone" };
+  }
+
+  if (opts.requireMobile && !isMobilePhoneType(c.phoneTypeRaw)) {
+    return { keep: false, reason: "not_mobile" };
   }
 
   const ownerName = (c.owner_name ?? "").trim();
