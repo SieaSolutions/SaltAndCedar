@@ -7,6 +7,7 @@ import {
   type Mapping,
   suggestField,
 } from "@/lib/importMapping";
+import { LEAD_SOURCES } from "@/lib/types";
 import Papa, { type ParseError } from "papaparse";
 import { useMemo, useRef, useState, type RefObject } from "react";
 
@@ -40,6 +41,7 @@ export function BulkUploadForm() {
   const [step, setStep] = useState<Step>("pick");
   const [parsed, setParsed] = useState<ParsedFile | null>(null);
   const [mapping, setMapping] = useState<Record<string, Mapping>>({});
+  const [source, setSource] = useState<string>("");
   const [parseError, setParseError] = useState<string>("");
   const [submitError, setSubmitError] = useState<string>("");
   const [result, setResult] = useState<ImportResponse | null>(null);
@@ -49,6 +51,7 @@ export function BulkUploadForm() {
     setStep("pick");
     setParsed(null);
     setMapping({});
+    setSource("");
     setParseError("");
     setSubmitError("");
     setResult(null);
@@ -104,17 +107,33 @@ export function BulkUploadForm() {
     });
   }
 
-  const phoneMapped = useMemo(
-    () => Object.values(mapping).some((m) => m === "owner_number"),
-    [mapping],
-  );
+  const mappedFieldSet = useMemo(() => {
+    const s = new Set<string>();
+    for (const v of Object.values(mapping)) {
+      if (v !== "ignore") s.add(v);
+    }
+    return s;
+  }, [mapping]);
 
-  const phoneTypeMapped = useMemo(
-    () => Object.values(mapping).some((m) => m === "phone_type"),
-    [mapping],
-  );
+  const missingRequired = useMemo(() => {
+    const missing: string[] = [];
+    const hasName =
+      mappedFieldSet.has("owner_name") ||
+      mappedFieldSet.has("first_name") ||
+      mappedFieldSet.has("last_name");
+    if (!hasName) missing.push("Owner name");
+    if (!mappedFieldSet.has("owner_number")) missing.push("Phone");
+    if (!mappedFieldSet.has("phone_type")) missing.push("Phone type");
+    if (!mappedFieldSet.has("address")) missing.push("Address");
+    if (!mappedFieldSet.has("city")) missing.push("City");
+    if (!mappedFieldSet.has("state")) missing.push("State");
+    if (!mappedFieldSet.has("beds")) missing.push("Beds");
+    if (!mappedFieldSet.has("baths")) missing.push("Baths");
+    if (!source) missing.push("Source");
+    return missing;
+  }, [mappedFieldSet, source]);
 
-  const canImport = phoneMapped && phoneTypeMapped;
+  const canImport = missingRequired.length === 0;
 
   const fieldUseCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -207,7 +226,7 @@ export function BulkUploadForm() {
       const res = await fetch("/api/leads/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rows: payloadRows }),
+        body: JSON.stringify({ rows: payloadRows, source }),
       });
       const body = (await res.json().catch(() => ({}))) as ImportResponse;
 
@@ -253,6 +272,8 @@ export function BulkUploadForm() {
             mapping={mapping}
             setMapping={setMapping}
             duplicateFields={duplicateFields}
+            source={source}
+            onSourceChange={setSource}
           />
           <PreviewTable
             previewColumns={previewColumns}
@@ -269,13 +290,20 @@ export function BulkUploadForm() {
                 ? "Importing…"
                 : `Import ${parsed.rows.length.toLocaleString()} row${parsed.rows.length === 1 ? "" : "s"}`}
             </Button>
-            {!canImport ? (
+            <p className="text-sm text-stone-500">
+              Only <strong>mobile</strong> / <strong>cell</strong> rows are
+              imported; landlines and other types are skipped.
+            </p>
+            {missingRequired.length > 0 ? (
               <p className="text-sm text-amber-700">
-                Map columns to{" "}
-                <strong>{FIELD_LABELS.owner_number}</strong> and{" "}
-                <strong>{FIELD_LABELS.phone_type}</strong> to enable import.
-                Only <strong>mobile</strong> / <strong>cell</strong> rows are
-                uploaded; landlines and other types are skipped.
+                Still required:{" "}
+                {missingRequired.map((f, i) => (
+                  <span key={f}>
+                    {i > 0 ? ", " : ""}
+                    <strong>{f}</strong>
+                  </span>
+                ))}
+                .
               </p>
             ) : null}
             {duplicateFields.length ? (
@@ -388,20 +416,41 @@ function Step2Mapping({
   mapping,
   setMapping,
   duplicateFields,
+  source,
+  onSourceChange,
 }: {
   parsed: ParsedFile;
   mapping: Record<string, Mapping>;
   setMapping: (m: Record<string, Mapping>) => void;
   duplicateFields: string[];
+  source: string;
+  onSourceChange: (s: string) => void;
 }) {
   return (
     <section className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
       <h2 className="text-base font-semibold text-stone-900">2. Map columns</h2>
       <p className="mt-1 text-sm text-stone-600">
-        Choose the lead field each CSV column should fill, or leave it as
-        Ignore. Phone and phone type are required — only mobile/cell rows are
-        imported.
+        Select a source, then map each CSV column to a lead field (or Ignore).
+        Fields marked <span className="text-red-500">*</span> are required.
       </p>
+
+      <div className="mt-4 flex items-center gap-3">
+        <label className="flex items-center gap-2 text-sm font-medium text-stone-700 whitespace-nowrap">
+          Source <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={source}
+          onChange={(e) => onSourceChange(e.target.value)}
+          className={`rounded-lg border px-2 py-1.5 text-sm ${!source ? "border-amber-400 bg-amber-50" : "border-stone-300"}`}
+        >
+          <option value="">— select source —</option>
+          {LEAD_SOURCES.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <div className="mt-4 overflow-x-auto">
         <table className="min-w-full text-sm">

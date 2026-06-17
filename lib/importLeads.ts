@@ -52,7 +52,7 @@ function trimOrNull(v: string | null | undefined): string | null {
  */
 export async function importLeads(
   rows: ImportRow[],
-  ctx: { import_id: string },
+  ctx: { import_id: string; source: string },
 ): Promise<ImportSummary> {
   const total = rows.length;
   const reasonCounts = new Map<string, number>();
@@ -150,7 +150,7 @@ export async function importLeads(
   let inserted = 0;
   for (let i = 0; i < survivors.length; i += INSERT_BATCH) {
     const slice = survivors.slice(i, i + INSERT_BATCH);
-    inserted += await insertBatch(slice);
+    inserted += await insertBatch(slice, ctx.source);
   }
 
   log.info("import.summary", {
@@ -179,6 +179,7 @@ async function insertBatch(
     _firstFromRow?: string | null;
     _lastFromRow?: string | null;
   })[],
+  source: string,
 ): Promise<number> {
   if (!rows.length) return 0;
 
@@ -227,7 +228,7 @@ async function insertBatch(
     )
     SELECT
       owner_name, first_name, last_name, owner_number, owner_email,
-      'New', 'CSV Import',
+      'New', ${source},
       address, city, state, zipcode,
       beds, baths, rent_price, url, zid
     FROM UNNEST(

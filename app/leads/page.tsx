@@ -1,3 +1,4 @@
+import { LeadSourceSelect } from "@/components/LeadSourceSelect";
 import { LeadStatusSelect } from "@/components/LeadStatusSelect";
 import { PhoneCell } from "@/components/PhoneCell";
 import { RetryLeadButton } from "@/components/RetryLeadButton";
@@ -150,6 +151,7 @@ export default async function LeadsPage({
               <th className="px-4 py-3 font-medium">Beds</th>
               <th className="px-4 py-3 font-medium">Baths</th>
               <th className="px-4 py-3 font-medium">Rent</th>
+              <th className="px-4 py-3 font-medium">Source</th>
               <th className="px-4 py-3 font-medium">Status</th>
               <th className="px-4 py-3 font-medium">Actions</th>
             </tr>
@@ -183,6 +185,12 @@ export default async function LeadsPage({
                 </td>
                 <td className="px-4 py-3 tabular-nums text-stone-600">
                   {r.rent_price != null ? String(r.rent_price) : "—"}
+                </td>
+                <td className="px-4 py-3">
+                  <LeadSourceSelect
+                    leadId={Number(r.id)}
+                    source={String(r.source ?? "Zillow")}
+                  />
                 </td>
                 <td className="px-4 py-3">
                   <LeadStatusSelect

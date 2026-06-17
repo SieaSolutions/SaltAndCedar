@@ -1,6 +1,7 @@
 import { importLeads } from "@/lib/importLeads";
 import type { ImportRow } from "@/lib/importLeads";
 import { MAPPABLE_FIELDS } from "@/lib/importMapping";
+import { LEAD_SOURCES } from "@/lib/types";
 import { log } from "@/lib/log";
 import { NextResponse } from "next/server";
 
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Body must be an object" }, { status: 400 });
   }
 
-  const raw = (body as { rows?: unknown }).rows;
+  const { rows: raw, source } = body as { rows?: unknown; source?: unknown };
   if (!Array.isArray(raw)) {
     return NextResponse.json(
       { error: "`rows` must be an array" },
@@ -106,10 +107,18 @@ export async function POST(req: Request) {
     );
   }
 
-  log.info("import.started", { import_id, rows: rows.length });
+  const sourceStr = typeof source === "string" ? source.trim() : "";
+  if (!LEAD_SOURCES.includes(sourceStr as (typeof LEAD_SOURCES)[number])) {
+    return NextResponse.json(
+      { error: `Invalid source. Must be one of: ${LEAD_SOURCES.join(", ")}.` },
+      { status: 400 },
+    );
+  }
+
+  log.info("import.started", { import_id, rows: rows.length, source: sourceStr });
 
   try {
-    const summary = await importLeads(rows, { import_id });
+    const summary = await importLeads(rows, { import_id, source: sourceStr });
     return NextResponse.json({ ok: true, import_id, ...summary });
   } catch (e) {
     log.error("import.failed", e, { import_id });

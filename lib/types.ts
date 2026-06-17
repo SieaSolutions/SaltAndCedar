@@ -1,3 +1,6 @@
+export const LEAD_SOURCES = ["SieaSolutions", "Evolve", "Zillow"] as const;
+export type LeadSource = (typeof LEAD_SOURCES)[number];
+
 export const LEAD_STATUSES = [
   "New",
   "GHL",

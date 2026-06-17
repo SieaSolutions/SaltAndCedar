@@ -149,7 +149,7 @@ export async function runOneCity(
         ${phone},
         ${s.owner_email},
         'New',
-        'ForRent',
+        'Zillow',
         ${s.addressLine},
         ${s.city},
         ${s.state},
