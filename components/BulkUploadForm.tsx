@@ -11,6 +11,17 @@ import { LEAD_SOURCES } from "@/lib/types";
 import Papa, { type ParseError } from "papaparse";
 import { useMemo, useRef, useState, type RefObject } from "react";
 
+const REQUIRED_MAPPING_FIELDS = new Set([
+  "owner_name",
+  "owner_number",
+  "phone_type",
+  "address",
+  "city",
+  "state",
+  "beds",
+  "baths",
+]);
+
 type Step = "pick" | "map" | "submitting" | "summary";
 
 interface ParsedFile {
@@ -426,6 +437,23 @@ function Step2Mapping({
   source: string;
   onSourceChange: (s: string) => void;
 }) {
+  // Sort once at mount so rows don't jump while the user edits dropdowns.
+  const [sortedHeaders] = useState(() =>
+    [...parsed.headers].sort((a, b) => {
+      const aReq = REQUIRED_MAPPING_FIELDS.has(mapping[a] as string);
+      const bReq = REQUIRED_MAPPING_FIELDS.has(mapping[b] as string);
+      if (aReq === bReq) return 0;
+      return aReq ? -1 : 1;
+    }),
+  );
+
+  const requiredOptions = MAPPABLE_FIELDS.filter((f) =>
+    REQUIRED_MAPPING_FIELDS.has(f),
+  );
+  const optionalOptions = MAPPABLE_FIELDS.filter(
+    (f) => !REQUIRED_MAPPING_FIELDS.has(f),
+  );
+
   return (
     <section className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
       <h2 className="text-base font-semibold text-stone-900">2. Map columns</h2>
@@ -462,15 +490,19 @@ function Step2Mapping({
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
-            {parsed.headers.map((h) => {
+            {sortedHeaders.map((h) => {
               const sample = (parsed.rows[0]?.[h] ?? "").toString().trim();
               const isDup =
                 mapping[h] !== "ignore" &&
                 duplicateFields.includes(mapping[h] as string);
+              const isReqMapped = REQUIRED_MAPPING_FIELDS.has(mapping[h] as string);
               return (
                 <tr key={h}>
                   <td className="px-2 py-2 align-top font-medium text-stone-900">
                     {h}
+                    {isReqMapped ? (
+                      <span className="ml-1 text-red-500">*</span>
+                    ) : null}
                   </td>
                   <td className="px-2 py-2 align-top">
                     <select
@@ -484,11 +516,20 @@ function Step2Mapping({
                       }
                     >
                       <option value="ignore">Ignore</option>
-                      {MAPPABLE_FIELDS.map((f) => (
-                        <option key={f} value={f}>
-                          {FIELD_LABELS[f]}
-                        </option>
-                      ))}
+                      <optgroup label="Required">
+                        {requiredOptions.map((f) => (
+                          <option key={f} value={f}>
+                            {FIELD_LABELS[f]} *
+                          </option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Optional">
+                        {optionalOptions.map((f) => (
+                          <option key={f} value={f}>
+                            {FIELD_LABELS[f]}
+                          </option>
+                        ))}
+                      </optgroup>
                     </select>
                   </td>
                   <td className="max-w-xs truncate px-2 py-2 align-top text-stone-600">
